@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<!-- F7FF, April 2026 -->
+<!-- this version last edited 2026/04/09 -->
+<!-- fuck electron, we use straight HTML -->
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>0xF7FF (moon_tracker)</title>
+<style>
+body{
+
+    background:#000;          /* black background */
+    color:#fff;               /* white text */
+    font-family:monospace;
+}
+
+.maintext {
+    margin-left:10vw;
+    margin-right:40vw;
+    margin-top:15vh;
+    margin-bottom:100vh;
+    text-align: left;
+    background: #000;
+    color: #fff;
+    font-size: large;
+}
+
+.moon {
+    position: fixed;
+    width: 50vw;
+    height: 50vw;
+    right: -20vw;
+    top: 0vw;
+    border-radius: 50%;
+    background-color: #444;
+    text-align: center;
+}
+
+.moonbits {
+    position: relative;
+    border-radius: 50%;
+    background-color: #111;
+}
+
+.eclipse {
+    position: fixed;
+    width: 51vw;
+    height: 51vw;
+    right: -20vw;
+    top: 0vw;
+    border-radius: 50%;
+    background-color: black;
+    transition: 0.1s;
+}
+
+
+.header {
+    background: #000;
+    color: #fff;
+    font-size: 50px;
+    text-align: center;
+}
+
+.smallheader {
+    text-align: center;
+    margin-top: 15vh;
+    margin-bottom: 5vh;
+    background: #000;
+    color: #fff;
+    font-size: 30px;
+    text-align: center;
+}
+
+.databox {
+    width:50vw;
+    height:30vh;
+    background: #000;
+    color:#fff;
+    font-family:monospace;
+}
+
+/* make link colours look not-shit */
+a:link {color: white;background-color: transparent;text-decoration: underline;}
+a:visited {color: gray;background-color: transparent;text-decoration: underline;}
+a:hover {color: rebeccapurple;background-color: transparent;text-decoration: none;} /* <3 */
+a:active {color: gray;background-color: transparent;text-decoration: none;}
+
+</style>
+</head>
+
+<body>
+    <div class="maintext">
+        <div class="moon">
+            <div class="moonbits" style="width: 10vw;height: 20vw;right: -5vw;top: 15vw;"></div>
+            <div class="moonbits" style="width: 20vw;height: 10vw;right: -5vw;top: 10vw;"></div>
+            <div class="moonbits" style="width: 20vw;height: 20vw;right: -10vw;top: -25vw;"></div>
+            <div class="moonbits" style="width: 3vw;height: 3vw;right: -20vw;top: -24vw;"></div>
+            <div class="moonbits" style="width: 4vw;height: 4vw;right: -15vw;top: -12vw;"></div>
+        </div>
+        <div class="eclipse" right=5vw></div>
+        <div class="header"><h>moon_tracker</h></div>
+        <p style="font-size: medium; text-align: center;"><i>-F7FF, april 2026. and trust me, this site looks better on desktop</i></p>
+        <div>
+            <div class="smallheader"><h>Instructions:</h></div>
+            <p>Just fill out the "list of dates" box (down below) with the dates of every new moon you can keep track of. Separate the dates with an ENTER. The "output" window will automatically calculate the averages, errors, dates, and predict the next new moon. You can scroll through the math if you think there might be a mistake.</p>
+            <p>Some suggestions:</p>
+            <p>-  At least five dates are recommended. More data = more accurate predictions.</p>
+            <p>-  Try to pick a consistent "start time". Since the moon's phases last multiple days, people usually consider the "first visible sign" to be "day 0". It doesn't really matter as long as you're consistent, though.</p>
+            <p>-  Don't worry about missing any dates, this program will detect and skip the gaps.</p>
+        </div>
+        <div>
+            <div class="smallheader"><h>Input:</h></div>
+            <p>( your list of dates goes here, YYYY/MM/DD, no spaces )</p>
+            <textarea id="tinput" class="databox"></textarea><br>
+            <button onclick="fixFormattingButton()" style="background: #222; color: white">Attempt to fix date formatting (might not work)</button><br>
+            <p>Expected Cycle Time (just guess): </p><input type="number" id="userExpectedAverage" value=32 style="background: #222; color: white" onchange="updateBoxes()"></input> <!--doing this because I tried using standard deviation and it failed me-->
+        </div>
+        <div>
+            <div class="smallheader"><h>Output:</h></div>
+            <p>( this bit gets filled automatically whenever you change the input )</p>
+            <textarea id="toutput" class="databox" readonly="true">( numbers will fill in here )</textarea>
+        </div>
+        <div>
+            <div class="smallheader"><h>But... why?</h></div>
+            <p>Have you ever wanted a free, open-source, simple tool for tracking the Moon? Of course you have!</p>
+            <p>It sucks that there are so many moon-trackers nowadays that are stuck behind paywalls. Knowing the phases of the moon, knowing when phases will happen, and knowing that the moon isn't being tracked by some dataseller somewhere should be a right, in my opinion.</p>
+            <p>Someone very dear to my heart wanted a way to track the moon, so I made a little Excel spreadsheet. It worked really well, but it was clunky, so I figured I'd redo it in Javascript for the browser... Having a nice GUI sure helps.</p>
+            <p>This page performs all calculations inside the browser, completely offline, and doesn't save anything, not even any cookies. You'll need to copy and paste your input somewhere safe, or it'll be gone next time you refresh.</p>
+            <p>All this site mathematically does is use a normal distribution (aka "the bell curve") to extrapolate from the set of dates you give it. It's been filled out with some example dates, so you can get the idea of how it works. This works very well, however, it's just not possible to predict any more accurately than a few days.</p>
+            <p><i>This page is contained in a single HTML file, so you can <a href="./moontracker.html" download>download it and use it offline, at any time</a>. If that link doesn't work, you can probably just right-click anywhere and click "Save As". </i></p>
+            <p>This page is licensed under GNU GPL-V3. I am, by no means, an expert in medicine, law, or HTML; if you are, and you have any ideas/corrections/fixes/complaints, head over to the GitHub.</p>
+        </div>
+        <script>
+        //get the text elements as JS objects
+        const tinput = document.getElementById("tinput");
+        const userExpectedAverage = document.getElementById("userExpectedAverage");
+        const toutput = document.getElementById("toutput");
+        //function for finding average of an array
+        function average(arr){
+            return arr.reduce((a,b) => a + b) / arr.length; //JS doesn't have a sum function? who made this?
+        }
+        //function for finding standard deviation
+        function standardDeviation(arr){ //todo: switch to sample correlation when there are gaps?
+            const mean = average(arr);
+            const sdiffs = arr.map(x => (x - mean) ** 2); //square of differences from mean
+            const variance = average(sdiffs);
+            return variance ** 0.5; //square root
+        }
+        //gives a nice clear date in YYYY/MM/DD
+        function simpleDate(date){
+            return `${String(date.getFullYear())}/${String(date.getMonth()+1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`; //getDay() returns the day of the week, getDate() returns the number day!
+        }
+        // returns YYYY/MM/DD and then the written-out date, for clarity
+        function prettyDate(date){
+            return `${simpleDate(date)} (${date.toLocaleString("en-US", {weekday:"long",year:"numeric",month:"long",day:"numeric"})})`;
+        }
+        // Adds a number of days to a date, and returns a new date.
+        function addDays(date, days){
+            const acc = new Date(date);
+            acc.setDate(acc.getDate() + days);
+            return acc;
+        }
+        //getData is the function that takes the text in textinput and returns the text output, and does all the calculations involved. I'm very new to javascript, please be patient. This is kind-of a huge monolith, to make input errors more catchable and to make the log coherent. Sorry!
+        function getData(text, userExpectedAverage){
+            var notes = "\n\nFULL CALCULATION LOG (for double-checking): \n\n"; //log for full calculations
+            //first, split the input into dates
+            const datestrings = text.split("\n").map(s => s.trim().split(' ')[0]).filter(s => s); //split by line, then only use what's ahead of the first space, then trim
+            //check for wrong number of dates
+            if(datestrings.length == 0){
+                return "...empty?";
+            }
+            else if(datestrings.length == 1){
+                return "ERROR: Only one line detected! Dates should be YYYY/MM/DD, seperated with ENTER";
+            }
+            //convert into Date objects. should this be handled by JS natively?
+            notes += "First, reading the dates. Make sure they're as-intended, YYYY-MM-DD can be confusing.\n"
+            const dates = [];
+            for (let i=0; i < datestrings.length; i++){
+                var fields = datestrings[i].split(/[/-]/).map(Number); //regex for either / splitting or - splitting
+                if(fields[0] < 100){ //assume that 1-or-2-digit years are just cut off
+                    fields[0] += 2000;
+                }
+                if(fields.length != 3 || fields[1] > 12 || fields[1] < 1 || fields[0] < 1900 || fields[0] > 2200 || fields[3] < 1 || fields[3] > 31){
+                    return `ERROR: "${datestrings[i]}" doesn't look right, it should be YYYY-MM-DD!`;
+                }
+                var newdate = new Date(parseInt(fields[0]), parseInt(fields[1])-1, parseInt(fields[2]), 12); //assume noon, since the person is awake. subtract one from the months because Date() is 0-indexed
+                notes += `   ${datestrings[i]} -> ${prettyDate(newdate)}\n`;
+                if(isNaN(newdate)){
+                    return `ERROR: "${datestrings[i]}" does not seem to be a valid date.`;
+                }
+                dates.push(newdate);
+            }
+            //sort
+            dates.sort((a, b) => a - b);
+            //get the latest date and save it for adding on to later
+            latest = dates[dates.length - 1];
+            //find differences as a list of numbers
+            notes += "\nCalculating the difference between each date.\n";
+            var raw_datediffs = [];
+            for (let i=1; i < dates.length; i++){
+                var days = (dates[i] - dates[i-1]) /1000 / 60 / 60 / 24;
+                notes += "   " + datestrings[i-1] + " to " + datestrings[i] + ": " + days + " days\n";
+                raw_datediffs.push(days);
+            }
+            // get standard deviation and remove outliers
+            var datediffs = []; //this will be filled out as we go along pruning outliers
+            const raw_stdev = standardDeviation(raw_datediffs); //only really needed if we're determining limits from stdev, might be skippable
+            const raw_average = average(raw_datediffs);
+            const lowerlimit = userExpectedAverage / 3; //below this, ignore (maybe same cycle twice)? these values are from experience but they might need tweaking
+            const assumeskip = userExpectedAverage * 1.6; //above this, assume a cycle was skipped
+            const upperlimit = userExpectedAverage * 2.2; //above this, just ignore the gap entirely
+            notes += "stdev: " + raw_stdev + "\n";
+            notes += "average: " + raw_average + " days \n\n";
+            notes += "Setting the limits for an 'outlier':\n"
+            notes += " Lower Limit: " + lowerlimit + " days (below this, it will be ignored, it's probably a double-reading of the same cycle.)\n";
+            notes += " Skip Limit: " + assumeskip + " days (above this, assume a cycle was missed but was somewhere in the middle)\n";
+            notes += " Upper Limit: " + upperlimit + " days (above this, a cycle will be completely ignored)\n";
+            notes += "Second pass: Doing it again, but this time, discarding outliers:\n";
+            var prev = 0; //index of the PREVIOUS valid date
+            for (let i=1; i < dates.length; i++){
+                if(i == prev){ //don't compare to self (this can happen if the previous was too long)
+                    continue;
+                }
+                var days = (dates[i] - dates[prev]) / 1000 / 60 / 60 / 24;
+                notes += "   " + datestrings[prev] + " to " + datestrings[i] + ": " + days + " days";
+                if(days < lowerlimit){
+                    notes += " (ignored: too short)\n";
+                }
+                else if(days > upperlimit){
+                    notes += " (ignored: too long, even for multiple cycles)\n";
+                    prev = i+1;
+                }
+                else if(days > assumeskip){
+                    notes += " (very long: assuming a cycle was skipped)\n";
+                    datediffs.push(days / 2); //just count it as a single cycle of half length
+                    //maybe add it twice?
+                    prev = i;
+                }
+                else{ //accepted
+                    notes += "\n";
+                    datediffs.push(days);
+                    prev = i;
+                }
+            }
+
+            notes += "\nOverall filtered list:\n";
+
+
+            // final calculations (working off of the outlierless datediffs)
+            if(datediffs.length == 0){
+                return "ERROR: None of the dates seem to be within a reasonable statistical window. \n\n" + notes;
+            }
+            //make the main output section
+            var output = "QUICK RESULTS:\n";
+            const pAverage = average(datediffs);
+            const pstdev = standardDeviation(datediffs);
+            const prediction = addDays(latest, pAverage); //the peak of the normal
+            const p50 = pstdev * 0.6744897502 + 0.5; //note: this coefficient comes from Z-tables, but can be found in Excel as norminv(0.75,0,1). adding 0.5 to account for the fact we don't know time of day
+            const p90 = pstdev * 1.644853625 + 0.5;
+            output += ` Last New Moon: ${prettyDate(latest)}.\n`;
+            output += ` Next New Moon: ${prettyDate(prediction)}.\n`;
+            output += ` 50% chance between:  ${prettyDate(addDays(prediction, -p50))} and ${prettyDate(addDays(prediction, p50))}.\n`;
+            output += ` 90% chance before:   ${prettyDate(addDays(prediction, pstdev * 1.281551564))}.\n`;
+            output += ` Error Estimate: plus/minus ${Math.round((2 * (2 + p50) / datediffs.length**0.5)*10)/10} days.\n\n`; //2 (to account for the fact we arn't doing times-of-day) + p50 times standard error (estimating)
+            output += ` Last Full Moon: ${prettyDate(addDays(latest, pAverage / -2))}.\n`;
+            output += ` Next Full Moon: ${prettyDate(addDays(latest, pAverage / 2))}.\n\n`;
+            output += ` Next NEXT New Moon: ${prettyDate(addDays(prediction, pAverage))}.\n`;
+            output += ` Cycle Time        : ${Math.round(pAverage*100)/100} days.\n`;
+            output += ` Standard Dev.     : ${Math.round(pstdev*100)/100}\n`;
+
+            if(datediffs.length < 5){
+                output += "\nNOTE: This might not be accurate with less than six-ish dates.\n";
+            }
+            output += notes;
+            return output;
+        }
+        //this function takes the getData text and puts it in the textoutput box. This is really just a wrapper for the eventlistener
+        function updateBoxes(){
+            toutput.value = getData(tinput.value, Number(userExpectedAverage.value));
+        }
+        //called by the "fix formatting" button.
+        function fixFormattingButton(){
+            var corrected = "";
+            const lines = tinput.value.split('\n').map(x => x.trim());
+            for(let i=0; i < lines.length; i++){
+                if(lines[i].length == 0){
+                    continue;
+                }
+                var datemaybe = new Date(lines[i].replaceAll('-', '/')); //workaround for a quirk where dates with hyphens are interpreted as GMT not local time
+                if(isNaN(datemaybe)){
+                    corrected += "  " + lines[i] + " (mistake?)\n";
+                }
+                else {
+                    corrected += simpleDate(datemaybe) + "\n";
+                }
+            }
+            tinput.value = corrected;
+            updateBoxes();
+        }
+        //moon stuff
+        const eclipse = document.querySelector('.eclipse');
+        function updateMoon(){
+            const amount = window.scrollY/60;
+            eclipse.style.transform = `translate(${amount}vw, ${-amount}vw)`;
+        }
+        window.addEventListener('scroll', updateMoon);
+        //We need to attach updateBoxes so it runs each time the input field is modified.
+        tinput.addEventListener("input", updateBoxes);
+        //on startup, fill out the input box with the example (must be done within JS for linebreaks)
+        tinput.value = "2025/01/29 (example dates, replace these with yours)\n2025/02/27\n2025/04/27 (oops, skipped some, but that's alright, it'll work around it)\n2025/05/26\n2025/06/25\n2025/07/24\n2025/07/26 (double-counting is okay too, it'll just get rid of it)\n2025/08/23\n2025/09/21\n2025/10/21\n2025/11/20\n2025/12/19";
+        updateBoxes(); //run once on startup
+        </script>
+    </div> <!--end maintext-->
+</body>

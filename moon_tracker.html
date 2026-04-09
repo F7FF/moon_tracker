@@ -114,7 +114,8 @@ a:active {color: gray;background-color: transparent;text-decoration: none;}
             <p>( your list of dates goes here, YYYY/MM/DD, no spaces )</p>
             <textarea id="tinput" class="databox"></textarea><br>
             <button onclick="fixFormattingButton()" style="background: #222; color: white">Attempt to fix date formatting (might not work)</button><br>
-            <p>Expected Cycle Time (just guess): </p><input type="number" id="userExpectedAverage" value=32 style="background: #222; color: white" onchange="updateBoxes()"></input> <!--doing this because I tried using standard deviation and it failed me-->
+            <p>Expected Cycle Time (just guess): </p>
+            <input type="number" id="userExpectedAverage" value=32 style="background: #222; color: white" onchange="updateBoxes()">
         </div>
         <div>
             <div class="smallheader"><h>Output:</h></div>
@@ -128,8 +129,8 @@ a:active {color: gray;background-color: transparent;text-decoration: none;}
             <p>Someone very dear to my heart wanted a way to track the moon, so I made a little Excel spreadsheet. It worked really well, but it was clunky, so I figured I'd redo it in Javascript for the browser... Having a nice GUI sure helps.</p>
             <p>This page performs all calculations inside the browser, completely offline, and doesn't save anything, not even any cookies. You'll need to copy and paste your input somewhere safe, or it'll be gone next time you refresh.</p>
             <p>All this site mathematically does is use a normal distribution (aka "the bell curve") to extrapolate from the set of dates you give it. It's been filled out with some example dates, so you can get the idea of how it works. This works very well, however, it's just not possible to predict any more accurately than a few days.</p>
-            <p><i>This page is contained in a single HTML file, so you can <a href="./moontracker.html" download>download it and use it offline, at any time</a>. If that link doesn't work, you can probably just right-click anywhere and click "Save As". </i></p>
-            <p>This page is licensed under GNU GPL-V3. I am, by no means, an expert in medicine, law, or HTML; if you are, and you have any ideas/corrections/fixes/complaints, head over to the GitHub.</p>
+            <p><i>This page is contained in a single HTML file, so you can <a href="./moon_tracker.html" download>download it and use it offline, at any time</a>. If that link doesn't work, you can probably just right-click anywhere and click "Save As". </i></p>
+            <p>This page is licensed under GNU GPL-V3. I am, by no means, an expert in medicine, law, or HTML; if you are, and you have any ideas/corrections/fixes/complaints, head over to the <a href="https://github.com/F7FF/moon_tracker/">GitHub.</a></p>
         </div>
         <script>
         //get the text elements as JS objects
@@ -194,7 +195,7 @@ a:active {color: gray;background-color: transparent;text-decoration: none;}
             //sort
             dates.sort((a, b) => a - b);
             //get the latest date and save it for adding on to later
-            latest = dates[dates.length - 1];
+
             //find differences as a list of numbers
             notes += "\nCalculating the difference between each date.\n";
             var raw_datediffs = [];
@@ -204,6 +205,7 @@ a:active {color: gray;background-color: transparent;text-decoration: none;}
                 raw_datediffs.push(days);
             }
             // get standard deviation and remove outliers
+            var latest = new Date(NaN); //holds the "current" cycle, for adding off of
             var datediffs = []; //this will be filled out as we go along pruning outliers
             const raw_stdev = standardDeviation(raw_datediffs); //only really needed if we're determining limits from stdev, might be skippable
             const raw_average = average(raw_datediffs);
@@ -241,33 +243,32 @@ a:active {color: gray;background-color: transparent;text-decoration: none;}
                     notes += "\n";
                     datediffs.push(days);
                     prev = i;
+                    latest = dates[i];
                 }
             }
 
-            notes += "\nOverall filtered list:\n";
-
-
             // final calculations (working off of the outlierless datediffs)
-            if(datediffs.length == 0){
-                return "ERROR: None of the dates seem to be within a reasonable statistical window. \n\n" + notes;
+            // assert we actually have something to work with
+            if(datediffs.length == 0 || isNaN(latest)){
+                return "ERROR: None of the dates seem to be within a reasonable statistical window. Has something gone horribly wrong?\n\n" + notes;
             }
             //make the main output section
-            var output = "QUICK RESULTS:\n";
+            var output = "RESULTS:\n";
             const pAverage = average(datediffs);
             const pstdev = standardDeviation(datediffs);
             const prediction = addDays(latest, pAverage); //the peak of the normal
             const p50 = pstdev * 0.6744897502 + 0.5; //note: this coefficient comes from Z-tables, but can be found in Excel as norminv(0.75,0,1). adding 0.5 to account for the fact we don't know time of day
             const p90 = pstdev * 1.644853625 + 0.5;
-            output += ` Last New Moon: ${prettyDate(latest)}.\n`;
-            output += ` Next New Moon: ${prettyDate(prediction)}.\n`;
-            output += ` 50% chance between:  ${prettyDate(addDays(prediction, -p50))} and ${prettyDate(addDays(prediction, p50))}.\n`;
-            output += ` 90% chance before:   ${prettyDate(addDays(prediction, pstdev * 1.281551564))}.\n`;
-            output += ` Error Estimate: plus/minus ${Math.round((2 * (2 + p50) / datediffs.length**0.5)*10)/10} days.\n\n`; //2 (to account for the fact we arn't doing times-of-day) + p50 times standard error (estimating)
-            output += ` Last Full Moon: ${prettyDate(addDays(latest, pAverage / -2))}.\n`;
-            output += ` Next Full Moon: ${prettyDate(addDays(latest, pAverage / 2))}.\n\n`;
-            output += ` Next NEXT New Moon: ${prettyDate(addDays(prediction, pAverage))}.\n`;
-            output += ` Cycle Time        : ${Math.round(pAverage*100)/100} days.\n`;
-            output += ` Standard Dev.     : ${Math.round(pstdev*100)/100}\n`;
+            output += `  Current Cycle: ${prettyDate(latest)}.\n`;
+            output += `  Next New Moon: ${prettyDate(prediction)}.\n`;
+            output += `  50% chance between:  ${prettyDate(addDays(prediction, -p50))} and ${prettyDate(addDays(prediction, p50))}.\n`;
+            output += `  90% chance before:   ${prettyDate(addDays(prediction, pstdev * 1.281551564))}.\n`;
+            output += `  Error Estimate: plus/minus ${Math.round((2 * (2 + p50) / datediffs.length**0.5)*10)/10} days.\n\n`; //2 (to account for the fact we arn't doing times-of-day) + p50 times standard error (estimating)
+            output += `  Last Full Moon: ${prettyDate(addDays(latest, pAverage / -2))}.\n`;
+            output += `  Next Full Moon: ${prettyDate(addDays(latest, pAverage / 2))}.\n\n`;
+            output += `  Next NEXT New Moon: ${prettyDate(addDays(prediction, pAverage))}.\n`;
+            output += `  Cycle Time        : ${Math.round(pAverage*100)/100} days.\n`;
+            output += `  Standard Dev.     : ${Math.round(pstdev*100)/100}\n`;
 
             if(datediffs.length < 5){
                 output += "\nNOTE: This might not be accurate with less than six-ish dates.\n";
